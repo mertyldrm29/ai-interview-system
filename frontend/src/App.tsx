@@ -2,6 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import WelcomePage from './pages/WelcomePage';
+import InterviewPage from './pages/InterviewPage';
 import './App.css';
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
+        <Route path="/interview/:id" element={<InterviewPage />} />
       </Routes>
     </BrowserRouter>
   );

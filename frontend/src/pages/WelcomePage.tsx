@@ -20,7 +20,8 @@ const WelcomePage: React.FC = () => {
         try {
             const data = await startInterview(formData);
             console.log('Mülakat başlatıldı:', data);
-            alert("Mülakat oluşturuldu. ID: " + data.id);
+           // alert("Mülakat oluşturuldu. ID: " + data.id);
+            Navigate(`/interview/${data.id}`);
     } catch (error) {
         console.error("Hata:", error);
         alert("Mülakat başlatılamadı, backend'de sorun olabilir.");
