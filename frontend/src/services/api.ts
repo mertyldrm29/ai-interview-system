@@ -14,3 +14,10 @@ export const startInterview = async (userData: { name: string, surname: string, 
     const response = await api.post('/interviews/start', userData);
     return response.data;
 };
+
+export const sendWarning = async (interviewId: string, reason: string) => {
+    const response = await api.post(`/interviews/${interviewId}/warn`, reason, {
+        headers: { 'Content-Type': 'text/plain' }
+    });
+    return response.data;
+};

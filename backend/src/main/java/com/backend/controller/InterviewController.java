@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dto.CandidateDTO;
@@ -39,5 +40,12 @@ public class InterviewController {
         "Java tabanlı web frameworküdür, konfigürasyonu kolaylaştırır."
     );
     return ResponseEntity.ok(response);
-}
+    }
+
+    @PostMapping("/{id}/warn")
+    public ResponseEntity<Interview> addWarning(@PathVariable Long id, @RequestBody String reason) {
+        Interview updatedInterview = interviewService.addWarning(id, reason);
+        return ResponseEntity.ok(updatedInterview);
+    }
+
 }
