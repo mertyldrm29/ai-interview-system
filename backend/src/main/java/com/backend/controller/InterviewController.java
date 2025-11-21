@@ -1,16 +1,20 @@
 package com.backend.controller;
 
+import org.eclipse.angus.mail.util.QEncoderStream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.backend.dto.CandidateDTO;
+import com.backend.entity.Answer;
 import com.backend.entity.Interview;
+import com.backend.entity.Question;
 import com.backend.service.InterviewService;
 import com.backend.service.GeminiService;
 
@@ -48,4 +52,23 @@ public class InterviewController {
         return ResponseEntity.ok(updatedInterview);
     }
 
+    @GetMapping("/{id}/question")
+    public ResponseEntity<Question> getNextQuestion(@PathVariable Long id) {
+        Question question = interviewService.getNextQuestion(id);
+        if (question == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(question);
+    }
+
+    @PostMapping("/{id}/answer")
+    public ResponseEntity<Answer> submitAnswer(
+        @PathVariable Long id,
+        @RequestParam Long questionId,
+        @RequestBody String answerText
+    ) {
+        Answer savedAnswer = interviewService.submitAnswer(id, questionId, answerText);
+        return ResponseEntity.ok(savedAnswer);
+    }
+    
 }
