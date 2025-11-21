@@ -21,3 +21,17 @@ export const sendWarning = async (interviewId: string, reason: string) => {
     });
     return response.data;
 };
+
+export const getNextQuestion = async (interviewId: string) => {
+    const response = await api.get(`/interviews/${interviewId}/question`);
+
+    return response.data || null;
+};
+
+export const submitAnswer = async (interviewId: string, questionId: number, answerText: string) => {
+    const response = await api.post(`/interviews/${interviewId}/answer`, answerText, {
+        params: { questionId },
+        headers: { 'Content-Type': 'text/plain' }
+    });
+    return response.data;
+}

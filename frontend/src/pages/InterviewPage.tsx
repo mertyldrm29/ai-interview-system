@@ -1,7 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaceDetector, FilesetResolver, Detection } from '@mediapipe/tasks-vision';
-import { sendWarning } from '../services/api';
+import { getNextQuestion, sendWarning, submitAnswer } from '../services/api';
+
+interface Question {
+    id: number;
+    text: string;
+    techStack: string;
+}
 
 const InterviewPage: React.FC = () => {
     const { id } = useParams();
@@ -9,14 +15,20 @@ const InterviewPage: React.FC = () => {
     const streamRef = useRef<MediaStream | null>(null);
     const startTimeRef = useRef<number>(Date.now()); // Sayfa açılış zamanı
     const Navigate = useNavigate();
-    
-    // State'ler
+    const lastWarningTime = useRef<number>(0); // Son uyarının zamanı (Timestamp)
+
+    // AI ve Kamera State'leri
     const [faceDetector, setFaceDetector] = useState<FaceDetector | null>(null);
     const [faceCount, setFaceCount] = useState<number>(0); // Anlık yüz sayısı
     const [warningMsg, setWarningMsg] = useState<string | null>(null); // Ekranda görünecek uyarı
     const [isModelLoaded, setIsModelLoaded] = useState(false); // Model yüklendi mi
     const [warningCount, setWarningCount] = useState<number>(0);
-    const lastWarningTime = useRef<number>(0); // Son uyarının zamanı (Timestamp)
+
+    // Soru Cevap State'leri
+    const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+    const [answerText, setAnswerText] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFinished, setIsFinished] = useState(false);
 
     // MediaPipe Modelini Yükle
     useEffect(() => {
@@ -47,6 +59,8 @@ const InterviewPage: React.FC = () => {
 
     // Kamerayı Başlat
     useEffect(() => {
+        if (isFinished) return;
+
         let isMounted = true; // Sayfa açık mı kontrolü
 
         const startCamera = async () => {
@@ -77,10 +91,12 @@ const InterviewPage: React.FC = () => {
             isMounted = false;
             stopCamera(); 
         };
-    }, []);
+    }, [isFinished]);
 
     // Tespit için döngü
     useEffect(() => {
+        if(isFinished) return;
+
         let animationId: number;
         
         // Mülakat başladığında zamanlayıcıyı resetle
@@ -173,6 +189,63 @@ const InterviewPage: React.FC = () => {
         }
     };
 
+    const loadNextQuestion = async () => {
+        if (!id) return;
+        try{
+            setIsSubmitting(true);
+            const question = await getNextQuestion(id);
+
+            if (question) {
+                setCurrentQuestion(question);
+                setAnswerText("");
+            } else {
+                setIsFinished(true);
+                stopCamera();
+            } 
+        } catch (error) {
+            console.error("Soru çekilemedi:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    useEffect(() => {
+        loadNextQuestion();
+    }, [id]);
+    
+    const handleAnswerSubmit = async () => {
+        if(!id || !currentQuestion || !answerText.trim()) return;
+
+        try {
+            setIsSubmitting(true);
+            await submitAnswer(id, currentQuestion.id, answerText);
+
+            await loadNextQuestion();
+        } catch (error) {
+            console.error("Cevap gönderilemedi:", error);
+            alert("Bir hata oluştu, lütfen tekrar deneyin.");
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isFinished) {
+        return(
+            <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4">
+                <div className="bg-gray-800 p-8 rounded-xl shadow-2xl max-w-lg text-center">
+                    <div className="text-6xl mb-4">🎉</div>
+                    <h1 className="text-3xl font-bold mb-4">Mülakat Tamamlandı!</h1>
+                    <p className="text-gray-300 mb-8">
+                        Katılımınız için teşekkür ederiz. Cevaplarınız yapay zeka tarafından
+                         değerlendirilip sonuçları yöneticiye iletildi.
+                    </p>
+                    <button
+                    onClick={() => Navigate('/')} 
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition">Ana Sayfaya Dön</button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className={`min-h-screen flex flex-col items-center p-4 transition-colors duration-500 ${warningMsg ? 'bg-red-900' : 'bg-gray-900'}`}>
             
@@ -187,11 +260,11 @@ const InterviewPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6 w-full max-w-6xl">
+            <div className="flex flex-col md:flex-row gap-6 w-full max-w-6xl flex-grow">
                 {/* Kamera ve AI Durumu */}
                 <div className="flex-1 flex flex-col items-center relative">
                     {/* Video Çerçevesi */}
-                    <div className={`relative rounded-lg overflow-hidden shadow-2xl bg-black w-[640px] h-[480px] border-4 ${warningMsg ? 'border-red-600 animate-pulse' : 'border-blue-500'}`}>
+                    <div className={`relative rounded-lg overflow-hidden shadow-2xl bg-black w-full aspect-video border-4 ${warningMsg ? 'border-red-600 animate-pulse' : 'border-blue-500'}`}>
                         
                         {!isModelLoaded && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black z-20 text-white">
@@ -220,16 +293,41 @@ const InterviewPage: React.FC = () => {
                 </div>
 
                 {/* Soru Alanı */}
-                <div className="flex-1 bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col text-white">
-                    <h2 className="text-lg font-semibold text-blue-300 mb-2">Soru 1:</h2>
-                    <p className="text-xl mb-6">Spring Boot'ta Dependency Injection nedir?</p>
+                <div className="flex-1 bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col text-white h-[480px]">
+                    {currentQuestion ? (
+                        <>
+                    <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-blue-300">Soru #{currentQuestion.id}</h2>
+                    <span className="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">{currentQuestion.techStack}</span>
+                    </div>
+                    <p className="text-xl mb-6 flex-grow overflow-y-auto">{currentQuestion.text}</p>
                     <textarea 
-                        className="w-full flex-1 bg-gray-700 border border-gray-600 rounded-lg p-4 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-                        placeholder="Cevabınızı buraya yazın..."
+                        className="w-full h-40 bg-gray-700 border border-gray-600 rounded-lg p-4 text-white focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none mb-4"                        placeholder="Cevabınızı buraya yazın..."
+                        value={answerText}
+                        onChange={(e) => setAnswerText(e.target.value)}
+                        disabled={isSubmitting}
                     />
-                    <button className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                        Cevabı Gönder
+                    <button 
+                    onClick={handleAnswerSubmit}
+                    disabled={isSubmitting || !answerText.trim()}
+                    className={`w-full font-bold py-3 px-6 rounded-lg transition flex items-center justify-center
+                        ${isSubmitting || !answerText.trim() 
+                            ? 'bg-gray-600 cursor-not-allowed' 
+                            : 'bg-green-600 hover:bg-green-700 text-white'}`}
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                        AI Değerlendiriyor...
+                                    </>
+                                ) : "Cevabı Gönder"}
                     </button>
+                </>
+            ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                        Soru yükleniyor...
+                    </div>
+                )}
                 </div>
             </div>
         </div>
