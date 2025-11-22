@@ -13,10 +13,14 @@ import com.backend.repository.InterviewRepository;
 import com.backend.repository.UserRepository;
 import com.backend.repository.WarningLogRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+
 import com.backend.repository.QuestionRepository;
 import com.backend.repository.AnswerRepository;
 import com.backend.service.GeminiService;
 import jakarta.transaction.Transactional;
+import com.backend.entity.enums.InterviewStatus;
+import com.backend.service.EmailService;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +31,10 @@ public class InterviewService {
   private final QuestionRepository questionRepository;
   private final AnswerRepository answerRepository;
   private final GeminiService geminiService;
+  private final EmailService emailService;
+
+  @Value("${admin.email}")
+  private String adminEmail;
 
 
   public Interview createInterview(String name, String surname, String email, String phone) {
@@ -43,6 +51,41 @@ public class InterviewService {
     interview.setStartTime(LocalDateTime.now());
     interview.setStatus(Interview.InterviewStatus.ACTIVE);
     return interviewRepository.save(interview);
+  }
+
+  @Transactional
+  public void finishInterview(Long interviewId) {
+    Interview interview = interviewRepository.findById(interviewId).
+    orElseThrow(() -> new RuntimeException("Mülakat bulunamadı"));
+
+    // Mülakat aktif değilse işlem yapma
+    if (interview.getStatus() != Interview.InterviewStatus.ACTIVE) return;
+
+    // Mülakatı tamamla
+    interview.setStatus(Interview.InterviewStatus.COMPLETED);
+    interview.setEndTime(LocalDateTime.now());
+
+    // toplam puanı hesapla
+    List<Answer> answers = answerRepository.findAllByInterviewId(interviewId);
+    int totalScore = 0;
+
+    if (!answers.isEmpty()) {
+      int sum = answers.stream().mapToInt(Answer::getScore).sum();
+      totalScore = sum / answers.size();
+    }
+    interview.setScore(totalScore);
+
+    // uyarı sayısı
+    long warningCount = warningLogRepository.countByInterviewId(interviewId);
+
+    interviewRepository.save(interview);
+
+    // mail gönder
+    emailService.sendResultEmail(adminEmail, 
+                interview.getUser().getName() + " " + interview.getUser().getSurname(),
+                totalScore, 
+                (int) warningCount,
+                "BAŞARIYLA TAMAMLANDI");
   }
 
   @Transactional
@@ -65,6 +108,14 @@ public class InterviewService {
         if (currentWarnings >= 3) {
             interview.setStatus(Interview.InterviewStatus.TERMINATED);
             interview.setEndTime(LocalDateTime.now());
+
+            // kovulma maili
+            emailService.sendResultEmail(adminEmail,
+              interview.getUser().getName() + " " + interview.getUser().getSurname(),
+              0,
+              (int) currentWarnings,
+              "İhlal Nedeniyle Sonlandırıldı"
+            );
         }
         
         return interviewRepository.save(interview);

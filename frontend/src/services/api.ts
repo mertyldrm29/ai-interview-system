@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api';
 
+// API endpointleri
 export const api = axios.create({
     baseURL: API_URL,
     headers: {
@@ -15,6 +16,7 @@ export const startInterview = async (userData: { name: string, surname: string, 
     return response.data;
 };
 
+// Uyarı gönderme fonksiyonu
 export const sendWarning = async (interviewId: string, reason: string) => {
     const response = await api.post(`/interviews/${interviewId}/warn`, reason, {
         headers: { 'Content-Type': 'text/plain' }
@@ -22,12 +24,14 @@ export const sendWarning = async (interviewId: string, reason: string) => {
     return response.data;
 };
 
+// Soru getirme fonksiyonu
 export const getNextQuestion = async (interviewId: string) => {
     const response = await api.get(`/interviews/${interviewId}/question`);
 
     return response.data || null;
 };
 
+// Cevap gönderme fonksiyonu
 export const submitAnswer = async (interviewId: string, questionId: number, answerText: string) => {
     const response = await api.post(`/interviews/${interviewId}/answer`, answerText, {
         params: { questionId },
@@ -35,3 +39,8 @@ export const submitAnswer = async (interviewId: string, questionId: number, answ
     });
     return response.data;
 }
+
+// Mülakatı tamamla ve mail gönderme fonksiyonu
+export const finishInterview = async (interviewId: string) => {
+    await api.post(`/interviews/${interviewId}/finish`);
+};

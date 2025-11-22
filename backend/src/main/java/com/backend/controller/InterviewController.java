@@ -1,5 +1,6 @@
 package com.backend.controller;
 
+import org.apache.catalina.connector.Response;
 import org.eclipse.angus.mail.util.QEncoderStream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -28,6 +29,7 @@ public class InterviewController {
     private final InterviewService interviewService;
     private final com.backend.service.GeminiService geminiService;
 
+    // Mülakat başlat
     @PostMapping("/start")
     public ResponseEntity<Interview> startInterview(@RequestBody CandidateDTO candidate) {
         Interview interview = interviewService.createInterview(candidate.getName(),
@@ -46,12 +48,14 @@ public class InterviewController {
     return ResponseEntity.ok(response);
     }
 
+    // Uyarı ekle
     @PostMapping("/{id}/warn")
     public ResponseEntity<Interview> addWarning(@PathVariable Long id, @RequestBody String reason) {
         Interview updatedInterview = interviewService.addWarning(id, reason);
         return ResponseEntity.ok(updatedInterview);
     }
 
+    // Soru getir
     @GetMapping("/{id}/question")
     public ResponseEntity<Question> getNextQuestion(@PathVariable Long id) {
         Question question = interviewService.getNextQuestion(id);
@@ -60,7 +64,7 @@ public class InterviewController {
         }
         return ResponseEntity.ok(question);
     }
-
+    // Cevap gönder
     @PostMapping("/{id}/answer")
     public ResponseEntity<Answer> submitAnswer(
         @PathVariable Long id,
@@ -70,5 +74,12 @@ public class InterviewController {
         Answer savedAnswer = interviewService.submitAnswer(id, questionId, answerText);
         return ResponseEntity.ok(savedAnswer);
     }
-    
+
+    // Mülakatı tamamla ve mail gönder
+    @PostMapping("/{id}/finish")
+    public ResponseEntity<String> finishInterview(@PathVariable Long id) {
+        interviewService.finishInterview(id);
+        return ResponseEntity.ok("Mülakat başarıyla tamamlandı ve mail gönderildi.");
+    }
+
 }

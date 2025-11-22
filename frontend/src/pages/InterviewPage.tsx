@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaceDetector, FilesetResolver, Detection } from '@mediapipe/tasks-vision';
-import { getNextQuestion, sendWarning, submitAnswer } from '../services/api';
+import { getNextQuestion, sendWarning, submitAnswer, finishInterview } from '../services/api';
 
 interface Question {
     id: number;
@@ -199,8 +199,11 @@ const InterviewPage: React.FC = () => {
                 setCurrentQuestion(question);
                 setAnswerText("");
             } else {
-                setIsFinished(true);
-                stopCamera();
+                if (!isFinished) {
+                    await finishInterview(id);
+                    setIsFinished(true);
+                    stopCamera();
+                }
             } 
         } catch (error) {
             console.error("Soru çekilemedi:", error);
