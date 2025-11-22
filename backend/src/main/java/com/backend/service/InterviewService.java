@@ -38,6 +38,11 @@ public class InterviewService {
 
 
   public Interview createInterview(String name, String surname, String email, String phone) {
+
+    if(userRepository.findByEmail(email).isPresent()) {
+      throw new RuntimeException("Bu e-posta adresiyle daha önce başvuru yapılmış.");
+    }
+    
     User user = userRepository.findByEmail(email).orElseGet(() -> {
       User newUser = new User();
       newUser.setName(name);

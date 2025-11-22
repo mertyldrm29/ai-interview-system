@@ -12,11 +12,27 @@ const WelcomePage: React.FC = () => {
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // telefon numarası kontrolü
+        if (name === 'phone') {
+            const onlyNums = value.replace(/[^0-9]/g, '');
+            if (onlyNums.length <= 10) {
+                setFormData({ ...formData, [name]: onlyNums});
+            }        
+        } else {
+            setFormData({ ...formData, [name]: value});
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (formData.phone.length !== 10) {
+            alert("Telefon numarası 10 haneli olmalıdır.");
+            return;
+        }
+
         try {
             const data = await startInterview(formData);
             console.log('Mülakat başlatıldı:', data);
@@ -71,6 +87,7 @@ return (
                     <label className="block text-sm font-medium text-gray-700 mb-1">Telefon Numaranız</label>
                     <input 
                     name="phone"
+                    value={formData.phone}
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     placeholder="Telefon numaranızı başında 0 olmadan giriniz"

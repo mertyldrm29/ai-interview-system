@@ -33,12 +33,17 @@ public class InterviewController {
 
     // Mülakat başlat
     @PostMapping("/start")
-    public ResponseEntity<Interview> startInterview(@RequestBody CandidateDTO candidate) {
-        Interview interview = interviewService.createInterview(candidate.getName(),
+    public ResponseEntity<?> startInterview(@RequestBody CandidateDTO candidate) {
+        try {
+        Interview interview = interviewService.createInterview(
+        candidate.getName(),
         candidate.getSurname(),
         candidate.getEmail(),
         candidate.getPhone());
         return ResponseEntity.ok(interview);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/test-ai")
