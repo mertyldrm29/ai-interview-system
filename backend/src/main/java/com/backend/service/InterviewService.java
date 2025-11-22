@@ -178,4 +178,8 @@ public class InterviewService {
 
       return answerRepository.save(answer);
     }
+
+    public List<Interview> getAllInterviews() {
+      return interviewRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "startTime"));
+  }
 }

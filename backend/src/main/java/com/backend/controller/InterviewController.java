@@ -1,5 +1,7 @@
 package com.backend.controller;
 
+import java.util.List;
+
 import org.apache.catalina.connector.Response;
 import org.eclipse.angus.mail.util.QEncoderStream;
 import org.springframework.http.ResponseEntity;
@@ -80,6 +82,12 @@ public class InterviewController {
     public ResponseEntity<String> finishInterview(@PathVariable Long id) {
         interviewService.finishInterview(id);
         return ResponseEntity.ok("Mülakat başarıyla tamamlandı ve mail gönderildi.");
+    }
+
+    // Tüm mülakatları getir
+    @GetMapping
+    public ResponseEntity<List<Interview>> getAllInterviews() {
+        return ResponseEntity.ok(interviewService.getAllInterviews());
     }
 
 }

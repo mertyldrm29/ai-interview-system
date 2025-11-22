@@ -44,3 +44,9 @@ export const submitAnswer = async (interviewId: string, questionId: number, answ
 export const finishInterview = async (interviewId: string) => {
     await api.post(`/interviews/${interviewId}/finish`);
 };
+
+// Tüm mülakatları getirme fonksiyonu
+export const getAllInterviews = async () => {
+    const response = await api.get('/interviews');
+    return response.data;
+};

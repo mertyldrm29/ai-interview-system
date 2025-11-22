@@ -29,8 +29,8 @@ const WelcomePage: React.FC = () => {
 };
 
 return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md"> 
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+        <div className="bg-slate-500 p-8 rounded-xl shadow-lg w-full max-w-md"> 
             <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Teknik Mülakat Girişi</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,7 +73,7 @@ return (
                     name="phone"
                     onChange={handleChange}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    placeholder="Telefon numaranızı giriniz"
+                    placeholder="Telefon numaranızı başında 0 olmadan giriniz"
                     required
                     />
                 </div>
