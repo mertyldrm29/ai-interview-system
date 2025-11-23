@@ -5,7 +5,8 @@ import WelcomePage from './pages/WelcomePage';
 import InterviewPage from './pages/InterviewPage';
 import AdminPage from './pages/AdminPage';
 import './App.css';
-
+import AdminLoginPage from './pages/AdminLoginPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -13,7 +14,12 @@ function App() {
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/interview/:id" element={<InterviewPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route path="/admin" element={
+          <ProtectedRoute>
+            <AdminPage />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );

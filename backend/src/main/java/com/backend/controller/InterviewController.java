@@ -88,11 +88,4 @@ public class InterviewController {
         interviewService.finishInterview(id);
         return ResponseEntity.ok("Mülakat başarıyla tamamlandı ve mail gönderildi.");
     }
-
-    // Tüm mülakatları getir
-    @GetMapping
-    public ResponseEntity<List<Interview>> getAllInterviews() {
-        return ResponseEntity.ok(interviewService.getAllInterviews());
-    }
-
 }

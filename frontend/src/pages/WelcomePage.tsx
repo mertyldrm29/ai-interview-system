@@ -98,6 +98,11 @@ return (
                 Mülakata Başla
             </button>
         </form>
+        <div className="mt-4 text-center">
+    <a href="/admin" className="text-white text-sm hover:text-blue-500 underline">
+        Yönetici Girişi
+    </a>
+</div>
     </div>
 </div>
 );

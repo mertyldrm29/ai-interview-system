@@ -10,6 +10,16 @@ export const api = axios.create({
     },
 });
 
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
 // Mülakat başlatma fonksiyonu
 export const startInterview = async (userData: { name: string, surname: string, email: string, phone: string }) => {
     const response = await api.post('/interviews/start', userData);
@@ -47,6 +57,6 @@ export const finishInterview = async (interviewId: string) => {
 
 // Tüm mülakatları getirme fonksiyonu
 export const getAllInterviews = async () => {
-    const response = await api.get('/interviews');
+    const response = await api.get('/admin/interviews');
     return response.data;
 };

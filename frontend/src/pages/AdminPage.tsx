@@ -31,16 +31,28 @@ const AdminPage: React.FC = () => {
     }
 };
 
+const handleLogout = () => {
+    localStorage.removeItem('token');
+    window.location.href = '/admin-login';
+};
+
+
 return (
 
     <div className="min-h-screen bg-gray-100 p-8">
         <div className="max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-800">Admin Paneli</h1>
+                <div className="flex items-center gap-4">
                 <button onClick={() => window.location.reload()} className="bg-blue-600 text-white px-4 py-2 rounded-hover:bg-blue-700">
                     Yenile
                 </button>
+                <button onClick={handleLogout} className="bg-blue-600 text-white px-4 py-2 rounded-hover:bg-blue-700">
+                    Çıkış Yap
+                </button>
+                </div>
             </div>
+            
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full leading-normal">
