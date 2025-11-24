@@ -265,10 +265,16 @@ const InterviewPage: React.FC = () => {
 
         // 2. Durum: Uygulama Değişikliği 
         const handleBlur = () => {
-            // Sadece mülakat bitmediyse çalışsın
+            
+            // 1. Kamera akışı yoksa ceza kesme
+            if (!streamRef.current) return;
+            // 2. Mülakat bittiyse ceza kesme
+            if (isFinished) return;
+            // 3. Model yüklenmediyse ceza kesme
+            if (!isModelLoaded) return;
+            // Her şey tamamsa ceza kes
             startViolationLoop("Ekran Odağı Kaybı / Başka Uygulama");
         };
-
         // 3. Durum Geri Dönüş (Window Focus)
         const handleFocus = () => {
             stopViolationLoop();
@@ -284,7 +290,7 @@ const InterviewPage: React.FC = () => {
             window.removeEventListener("focus", handleFocus);
             if (tabIntervalRef.current) clearInterval(tabIntervalRef.current);
         };
-    }, [id, isFinished]);
+    }, [id, isFinished, isModelLoaded]);
 
     if (isFinished) {
         return(
