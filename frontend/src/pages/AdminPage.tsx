@@ -41,19 +41,23 @@ const AdminPage: React.FC = () => {
     const [warningsCache, setWarningsCache] = useState<Record<number, WarningLog[]>>({});
     const [loadingData, setLoadingData] = useState(false);
 
+    // Mülakatları yükleme döngüsü
     useEffect(() => {
         loadInterviews();
     }, []);
 
+    // Mülakatları yükleme fonksiyonu
     const loadInterviews = () => {
         getAllInterviews().then(data => setInterviews(data)).catch(err => console.error(err));
     };
 
+    // Çıkış yapma fonksiyonu
     const handleLogout = () => {
         localStorage.removeItem('token');
         window.location.href = '/admin-login';
     };
     
+    // Mülakatları yükleme döngüsü
     useEffect(() => {
         getAllInterviews().then(data => setInterviews(data));
     }, []);
@@ -71,7 +75,7 @@ const AdminPage: React.FC = () => {
             try {
                 setLoadingData(true);
                 
-                // İki isteği aynı anda at (Paralel)
+                // İki isteği aynı anda at 
                 const [answersData, warningsData] = await Promise.all([
                     getInterviewDetails(id),
                     getInterviewWarnings(id)
@@ -88,6 +92,7 @@ const AdminPage: React.FC = () => {
         }
     };
 
+    // Durum badge fonksiyonu
     const getStatusBadge = (status: string) => {
     switch (status) {
         case 'COMPLETED': return <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Tamamlandı</span>
@@ -97,6 +102,7 @@ const AdminPage: React.FC = () => {
     }
 };
 
+    // Zaman formatlama fonksiyonu
 const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('tr-TR');
 };
@@ -123,7 +129,7 @@ return (
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mülakat ID</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Aday</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Puan</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Durum & İşlem</th>

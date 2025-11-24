@@ -16,6 +16,7 @@ const InterviewPage: React.FC = () => {
     const startTimeRef = useRef<number>(Date.now()); // Sayfa açılış zamanı
     const Navigate = useNavigate();
     const lastWarningTime = useRef<number>(0); // Son uyarının zamanı (Timestamp)
+    const tabIntervalRef = useRef<number | null>(null); // Sekme kontrol döngüsü
 
     // AI ve Kamera State'leri
     const [faceDetector, setFaceDetector] = useState<FaceDetector | null>(null);
@@ -119,53 +120,18 @@ const InterviewPage: React.FC = () => {
                 // --- İHLAL KONTROLLERİ ---
                 let currentReason = null;
 
-                if (!isWarmingUp) { // ısınma süresi bittiyse kontrol et
+                if (!isWarmingUp) {
                     if (count === 0) {
-                        currentReason = "Yüz tespit edilemedi";
-                        setWarningMsg("⚠️ YÜZ BULUNAMADI! Lütfen kameraya bakın.");
+                        triggerViolation("Yüz tespit edilemedi");
                     } else if (count > 1) {
-                        currentReason = "Birden fazla kişi tespit edildi";
-                        setWarningMsg("⚠️ İHLAL: Ekranda birden fazla kişi var!");
+                        triggerViolation("Birden fazla kişi tespit edildi");
                     } else {
-                        setWarningMsg(null);
-                    }
-                } else {
-                    setWarningMsg("🔵 Sistem Hazırlanıyor..."); 
-                }
-
-                // bir ihlal varsa ve son uyarının üzerinden 5 saniye geçtiyse
-                if (currentReason && id) {
-                    const now = Date.now();
-                    
-                    // Cooldown kontrolü (5 saniye)
-                    if (now - lastWarningTime.current > 5000) {
-                        lastWarningTime.current = now; 
-                        
-                        console.log("Backend'e uyarı gönderiliyor: ", currentReason);
-
-                        // Backend isteği
-                        sendWarning(id, currentReason)
-                            .then((updatedInterview) => {
-                                console.log("Uyarı kaydedildi.");
-                                
-                                // Sayaç artırma
-                                setWarningCount(prev => prev + 1);
-
-                                if (updatedInterview.status === 'TERMINATED') {
-                                    stopCamera(); 
-                                    setTimeout(() => {
-                                        alert("Çok fazla ihlal yaptınız. Mülakat sonlandırıldı!");
-                                        Navigate('/');
-                                    }, 100);
-                                }
-                            })
-                            .catch(err => {
-                                console.error("Uyarı gönderilemedi:", err);
-                            });
+                        if (Date.now() - lastWarningTime.current > 5000) {
+                             setWarningMsg(null);
+                        }
                     }
                 }
             }
-            
             animationId = requestAnimationFrame(detectLoop);
         };
 
@@ -176,19 +142,19 @@ const InterviewPage: React.FC = () => {
         return () => cancelAnimationFrame(animationId);
     }, [faceDetector, isModelLoaded, id, startTimeRef]);
 
+    // Kamera durdurma fonksiyonu
     const stopCamera = () => {
-        // 1. Stream'i durdur
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
             streamRef.current = null;
         }
-        
-        // 2. Video elementini boşalt 
+         
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
     };
 
+    // Soru yükleme fonksiyonu
     const loadNextQuestion = async () => {
         if (!id) return;
         try{
@@ -212,6 +178,7 @@ const InterviewPage: React.FC = () => {
         }
     };
 
+    // Soru yükleme döngüsü
     useEffect(() => {
         loadNextQuestion();
     }, [id]);
@@ -230,6 +197,94 @@ const InterviewPage: React.FC = () => {
             setIsSubmitting(false);
         }
     };
+
+    // İhlal tetikleme fonksiyonu
+    const triggerViolation = (reason: string) => {
+        if (!id || isFinished) return;
+
+        const now = Date.now();
+
+        if (now - lastWarningTime.current > 5000) {
+            lastWarningTime.current = now; 
+            
+            console.log("⚠️ İHLAL TESPİT EDİLDİ:", reason);
+            setWarningMsg(`⚠️ İHLAL: ${reason}`); 
+
+            // Backend'e bildir
+            sendWarning(id, reason)
+                .then((updatedInterview) => {
+                    setWarningCount(prev => prev + 1);
+
+                    if (updatedInterview.status === 'TERMINATED') {
+                        stopCamera();
+                        // Kullanıcıya bilgi ver
+                        setTimeout(() => {
+                            alert("Mülakat İhlali: " + reason + "\n\nÇok fazla uyarı aldığınız için mülakat sonlandırıldı.");
+                            Navigate('/');
+                        }, 100);
+                    }
+                })
+                .catch(err => console.error("Uyarı gönderilemedi:", err));
+        }
+    };
+
+    // Sekme kontrol döngüsü
+    useEffect(() => {
+        // İhlal Sayacı Başlatma Fonksiyonu
+        const startViolationLoop = (reason: string) => {
+
+            triggerViolation(reason);
+
+            if (!tabIntervalRef.current) {
+                tabIntervalRef.current = window.setInterval(() => {
+                    // Kullanıcı hala dönmediyse sürekli ceza kes
+                    // (document.hidden kontrolü sekme için, !document.hasFocus() uygulama için)
+                    if (document.hidden || !document.hasFocus()) {
+                        triggerViolation(reason + " (Sürekli İhlal)");
+                    }
+                }, 1000);
+            }
+        };
+
+        // İhlal Bitiş Fonksiyonu
+        const stopViolationLoop = () => {
+            if (tabIntervalRef.current) {
+                clearInterval(tabIntervalRef.current);
+                tabIntervalRef.current = null;
+            }
+        };
+
+        // 1. Durum: Sekme Değişikliği
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                startViolationLoop("Sekme Değişikliği");
+            } else {
+
+            }
+        };
+
+        // 2. Durum: Uygulama Değişikliği 
+        const handleBlur = () => {
+            // Sadece mülakat bitmediyse çalışsın
+            startViolationLoop("Ekran Odağı Kaybı / Başka Uygulama");
+        };
+
+        // 3. Durum Geri Dönüş (Window Focus)
+        const handleFocus = () => {
+            stopViolationLoop();
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("blur", handleBlur);
+        window.addEventListener("focus", handleFocus);
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("blur", handleBlur);
+            window.removeEventListener("focus", handleFocus);
+            if (tabIntervalRef.current) clearInterval(tabIntervalRef.current);
+        };
+    }, [id, isFinished]);
 
     if (isFinished) {
         return(
