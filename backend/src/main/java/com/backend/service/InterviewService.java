@@ -187,4 +187,11 @@ public class InterviewService {
     public List<Interview> getAllInterviews() {
       return interviewRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "startTime"));
   }
+  public List<Answer> getInterviewAnswers(Long interviewId) {
+    return answerRepository.findAllByInterviewId(interviewId);
+}
+
+public List<WarningLog> getInterviewWarnings(Long interviewId) {
+  return warningLogRepository.findAllByInterviewId(interviewId);
+}
 }

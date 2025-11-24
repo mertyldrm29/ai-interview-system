@@ -10,6 +10,7 @@ export const api = axios.create({
     },
 });
 
+// request interceptor
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -19,6 +20,20 @@ api.interceptors.request.use((config) => {
 }, (error) => {
     return Promise.reject(error);
 });
+
+// response interceptor
+api.interceptors.response.use(
+    (response) => {
+        return response;
+    },
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/admin-login';
+        }
+        return Promise.reject(error);
+    }
+);
 
 // Mülakat başlatma fonksiyonu
 export const startInterview = async (userData: { name: string, surname: string, email: string, phone: string }) => {
@@ -58,5 +73,17 @@ export const finishInterview = async (interviewId: string) => {
 // Tüm mülakatları getirme fonksiyonu
 export const getAllInterviews = async () => {
     const response = await api.get('/admin/interviews');
+    return response.data;
+};
+
+// Detaylarıgetir
+export const getInterviewDetails = async (interviewId: number) => {
+    const response = await api.get(`/admin/interviews/${interviewId}/details`);
+    return response.data;
+};
+
+// Uyarı kayıtlarını getir
+export const getInterviewWarnings = async (interviewId: number) => {
+    const response = await api.get(`/admin/interviews/${interviewId}/warnings`);
     return response.data;
 };

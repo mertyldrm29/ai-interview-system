@@ -40,18 +40,18 @@ const WelcomePage: React.FC = () => {
             Navigate(`/interview/${data.id}`);
     } catch (error) {
         console.error("Hata:", error);
-        alert("Mülakat başlatılamadı, backend'de sorun olabilir.");
+        alert("Bu e-posta adresiyle daha önce mülakat yapılmış olabilir.");
     }
 };
 
 return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gray-800">
         <div className="bg-slate-500 p-8 rounded-xl shadow-lg w-full max-w-md"> 
             <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Teknik Mülakat Girişi</h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Adınız</label>
+                    <label className="block text-sm font-medium text-black mb-1">Adınız</label>
                     <input 
                     name="name"
                     onChange={handleChange}
@@ -62,7 +62,7 @@ return (
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Soyadınız</label>
+                    <label className="block text-sm font-medium text-black mb-1">Soyadınız</label>
                     <input 
                     name="surname"
                     onChange={handleChange}
@@ -73,7 +73,7 @@ return (
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mail Adresiniz</label>
+                    <label className="block text-sm font-medium text-black mb-1">Mail Adresiniz</label>
                     <input 
                     name="email"
                     type="email"
@@ -84,7 +84,7 @@ return (
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Telefon Numaranız</label>
+                    <label className="block text-sm font-medium text-black mb-1">Telefon Numaranız</label>
                     <input 
                     name="phone"
                     value={formData.phone}
