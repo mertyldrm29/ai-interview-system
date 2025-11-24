@@ -4,5 +4,6 @@ public enum InterviewStatus {
     PENDING,   
     ACTIVE,     
     COMPLETED,  
-    TERMINATED 
+    TERMINATED,
+    ABANDONED;
 }

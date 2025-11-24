@@ -1,9 +1,5 @@
 package com.backend.controller;
 
-import java.util.List;
-
-import org.apache.catalina.connector.Response;
-import org.eclipse.angus.mail.util.QEncoderStream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +15,7 @@ import com.backend.entity.Answer;
 import com.backend.entity.Interview;
 import com.backend.entity.Question;
 import com.backend.service.InterviewService;
-import com.backend.service.GeminiService;
+
 
 import lombok.RequiredArgsConstructor;
 

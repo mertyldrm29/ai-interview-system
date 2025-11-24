@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaceDetector, FilesetResolver, Detection } from '@mediapipe/tasks-vision';
+import { FaceDetector, FilesetResolver } from '@mediapipe/tasks-vision';
 import { getNextQuestion, sendWarning, submitAnswer, finishInterview } from '../services/api';
 
 interface Question {

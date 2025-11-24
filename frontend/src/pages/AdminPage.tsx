@@ -98,6 +98,7 @@ const AdminPage: React.FC = () => {
         case 'COMPLETED': return <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Tamamlandı</span>
         case 'TERMINATED': return <span className="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">Atıldı</span>
         case 'ACTIVE': return <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">Devam Ediyor</span>
+        case 'ABANDONED': return <span className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs font-bold border border-yellow-300">Terk Etti</span>;
         default: return <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-bold">{status}</span>
     }
 };

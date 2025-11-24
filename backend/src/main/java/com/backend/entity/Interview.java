@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import com.backend.entity.enums.InterviewStatus;
 import jakarta.persistence.Table;
 import lombok.Data;
 
@@ -34,14 +35,6 @@ public class Interview {
     // Mülakat puanı (Gemini'den gelen sonuçların ortalaması olabilir)
     private Integer score;
 
-    // Mülakat durumu: PENDING, ACTIVE, COMPLETED, TERMINATED (atıldı)
     @Enumerated(EnumType.STRING)
-    private InterviewStatus status; 
-
-    public enum InterviewStatus {
-        PENDING,
-        ACTIVE,
-        COMPLETED,
-        TERMINATED
-    }
+    private InterviewStatus status;
 }

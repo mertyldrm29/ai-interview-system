@@ -54,7 +54,7 @@ public class InterviewService {
     Interview interview = new Interview();
     interview.setUser(user);
     interview.setStartTime(LocalDateTime.now());
-    interview.setStatus(Interview.InterviewStatus.ACTIVE);
+    interview.setStatus(InterviewStatus.ACTIVE);
     return interviewRepository.save(interview);
   }
 
@@ -64,10 +64,10 @@ public class InterviewService {
     orElseThrow(() -> new RuntimeException("Mülakat bulunamadı"));
 
     // Mülakat aktif değilse işlem yapma
-    if (interview.getStatus() != Interview.InterviewStatus.ACTIVE) return;
+    if (interview.getStatus() != InterviewStatus.ACTIVE) return;
 
     // Mülakatı tamamla
-    interview.setStatus(Interview.InterviewStatus.COMPLETED);
+    interview.setStatus(InterviewStatus.COMPLETED);
     interview.setEndTime(LocalDateTime.now());
 
     // toplam puanı hesapla
@@ -98,7 +98,7 @@ public class InterviewService {
         Interview interview = interviewRepository.findById(interviewId)
                 .orElseThrow(() -> new RuntimeException("Mülakat bulunamadı"));
 
-        if (interview.getStatus() != Interview.InterviewStatus.ACTIVE) {
+        if (interview.getStatus() != InterviewStatus.ACTIVE) {
             return interview; 
         }
 
@@ -111,7 +111,7 @@ public class InterviewService {
         long currentWarnings = warningLogRepository.countByInterviewId(interviewId);
 
         if (currentWarnings >= 3) {
-            interview.setStatus(Interview.InterviewStatus.TERMINATED);
+            interview.setStatus(InterviewStatus.TERMINATED);
             interview.setEndTime(LocalDateTime.now());
 
             // kovulma maili
